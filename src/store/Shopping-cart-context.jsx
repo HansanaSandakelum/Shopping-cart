@@ -1,17 +1,12 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useReducer } from "react";
 
 import { DUMMY_PRODUCTS } from "../dummy-products";
 
 export const CartContext = createContext();
 
-export default function CartContextProvider({ children }) {
-  const [shoppingCart, setShoppingCart] = useState({
-    items: [],
-  });
-
-  function handleAddItemToCart(id) {
-    setShoppingCart((prevShoppingCart) => {
-      const updatedItems = [...prevShoppingCart.items];
+function shoppingCartReducer(state, action) {
+   if(action.type==='ADD_ITEM'){
+    const updatedItems = [...prevShoppingCart.items];
 
       const existingCartItemIndex = updatedItems.findIndex(
         (cartItem) => cartItem.id === id
@@ -37,7 +32,28 @@ export default function CartContextProvider({ children }) {
       return {
         items: updatedItems,
       };
-    });
+   }
+}
+
+export default function CartContextProvider({ children }) {
+  const [shoppingCartState, shoppingCartDispatch] = useReducer(
+    shoppingCartReducer,
+    {
+      items: [],
+    }
+  );
+
+  const [shoppingCart, setShoppingCart] = useState({
+    items: [],
+  });
+
+  function handleAddItemToCart(id) {
+
+    shoppingCartDispatch({
+        type:'ADD_ITEM',
+        payload:id
+    })
+   
   }
 
   function handleUpdateCartItemQuantity(productId, amount) {
@@ -66,7 +82,7 @@ export default function CartContextProvider({ children }) {
   }
 
   const ctxValue = {
-    items: shoppingCart.items,
+    items: shoppingCartState.items,
     addItemToCart: handleAddItemToCart,
     updateItemQuantity: handleUpdateCartItemQuantity,
   };
